@@ -49,3 +49,6 @@ venv
 /docker-compose.yml
 /docker-entrypoint.sh
 /docker-init.sh
+
+/superset-venv
+superset/assets/yarn.lock

@@ -604,6 +604,58 @@ appbuilder.add_view(
     category_icon='')
 
 
+class DashboardModelFolderView(SupersetModelView, DeleteMixin):  # noqa
+    route_base = '/dashboard_folders'
+    datamodel = SQLAInterface(models.Dashboard)
+
+    list_title = _('List Dashboard Folders')
+
+    list_columns = ['dashboard_link', 'creator', 'modified']
+    order_columns = ['modified']
+    base_order = ('changed_on', 'desc')
+    description_columns = {
+        'position_json': _(
+            'This json object describes the positioning of the widgets in '
+            'the dashboard. It is dynamically generated when adjusting '
+            'the widgets size and positions by using drag & drop in '
+            'the dashboard view'),
+        'css': _(
+            'The css for individual dashboards can be altered here, or '
+            'in the dashboard view where changes are immediately '
+            'visible'),
+        'slug': _('To get a readable URL for your dashboard'),
+        'json_metadata': _(
+            'This JSON object is generated dynamically when clicking '
+            'the save or overwrite button in the dashboard view. It '
+            'is exposed here for reference and for power users who may '
+            'want to alter specific parameters.'),
+        'owners': _('Owners is a list of users who can alter the dashboard.'),
+    }
+    base_filters = [['slice', DashboardFilter, lambda: []]]
+    label_columns = {
+        'folder_link': _('Folder'),
+        'dashboard_title': _('Title'),
+        'slug': _('Slug'),
+        'slices': _('Charts'),
+        'owners': _('Owners'),
+        'creator': _('Creator'),
+        'modified': _('Modified'),
+        'position_json': _('Position JSON'),
+        'css': _('CSS'),
+        'json_metadata': _('JSON Metadata'),
+        'table_names': _('Underlying Tables'),
+    }
+
+
+appbuilder.add_view(
+    DashboardModelFolderView,
+    'Dashboard Folders',
+    label=__('Dashboard Folders'),
+    icon='fa-dashboard',
+    category='',
+    category_icon='')
+
+
 class DashboardModelViewAsync(DashboardModelView):  # noqa
     route_base = '/dashboardasync'
     list_columns = [
