@@ -59,6 +59,34 @@ from .base import (
 )
 from .utils import bootstrap_user_data
 
+from flask_appbuilder.models.sqla.filters import FilterStartsWith
+from flask_babel import lazy_gettext
+from flask_appbuilder.models.sqla.filters import BaseFilter
+
+
+def get_field_setup_query(query, model, column_name):
+    """
+        Help function for SQLA filters, checks for dot notation on column names.
+        If it exists, will join the query with the model from the first part of the field name.
+        example:
+            Contact.created_by: if created_by is a User model, it will be joined to the query.
+    """
+    if not hasattr(model, column_name):
+       # it's an inner obj attr
+        rel_model = getattr(model, column_name.split('.')[0]).mapper.class_
+        query = query.join(rel_model)
+        return query, getattr(rel_model, column_name.split('.')[1])
+    else:
+        return query, getattr(model, column_name)
+
+class FilterEndsWith(BaseFilter):
+    name = lazy_gettext('Ends with')
+
+    def apply(self, query, value):
+        query, field = get_field_setup_query(query, self.model, self.column_name)
+        return query.filter(field.like('%' + value))
+
+
 config = app.config
 stats_logger = config.get('STATS_LOGGER')
 log_this = models.Log.log_this
@@ -631,7 +659,9 @@ class DashboardModelFolderView(SupersetModelView, DeleteMixin):  # noqa
             'want to alter specific parameters.'),
         'owners': _('Owners is a list of users who can alter the dashboard.'),
     }
-    base_filters = [['slice', DashboardFilter, lambda: []]]
+    # base_filters = [['slice', DashboardFilter, lambda: []], ['dashboard_link', FilterStartsWith, 's']]
+    base_filters = [['dashboard_title', FilterStartsWith, 's']]
+
     label_columns = {
         'folder_link': _('Folder'),
         'dashboard_title': _('Title'),
